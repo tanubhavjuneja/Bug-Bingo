@@ -1,32 +1,108 @@
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./style.css";
 
-import { useState } from "react";
+const Game = () => {
+  const [questions, setQuestions] = useState([]);
+  const [solved, setSolved] = useState({});
+  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [userCode, setUserCode] = useState("");
+  const navigate = useNavigate();
+  const API_URL = "https://tanubhavjuneja.pythonanywhere.com/bingo";
+  const userInformation = JSON.parse(localStorage.getItem("userInformation"));
+  useEffect(() => {
+    if (!userInformation) {
+      navigate("/");
+      return;
+    }
+    fetch(`${API_URL}/set_questions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      mode: "no-cors",
+      body: JSON.stringify({ language: userInformation.language.toLowerCase() || "python" })
+    })
+      .then(res => res.ok ? res.json() : Promise.reject(`HTTP error! Status: ${res.status}`))
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setQuestions(data);
+          setSolved(data.reduce((acc, q) => ({ ...acc, [q.id]: false }), {}));
+        } else {
+          console.error("Invalid data received:", data);
+        }
+      })
+      .catch(err => console.error("Fetch error:", err));
+  }, [navigate]);
 
-export default function BugBingo() {
-  const user = JSON.parse(localStorage.getItem("user"));
-  const language = user?.language || "python";
-  const problems = {
-    python: ["Bug 1", "Bug 2", "Bug 3", "Bug 4", "Bug 5", "Bug 6", "Bug 7", "Bug 8", "Bug 9"],
-    "c++": ["C++ Bug 1", "C++ Bug 2", "C++ Bug 3", "C++ Bug 4", "C++ Bug 5", "C++ Bug 6", "C++ Bug 7", "C++ Bug 8", "C++ Bug 9"]
+  const handleCheck = () => {
+    if (!currentQuestion) return;
+    fetch(`${API_URL}/execute`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        code: userCode.trim(),
+        expected_output: currentQuestion.expected_output.trim(),
+        language: userInformation?.language.toLowerCase()
+      })
+    })
+      .then(res => res.json())
+      .then(result => {
+        if (result.correct) {
+          setSolved(prev => ({ ...prev, [currentQuestion.id]: true }));
+          closePopup();
+        } else {
+          alert(result.message || "Incorrect output!");
+        }
+      })
+      .catch(err => console.error("Execution error:", err));
   };
 
-  const [solved, setSolved] = useState(Array(9).fill(false));
-  const handleSolve = (index) => {
-    const newSolved = [...solved];
-    newSolved[index] = true;
-    setSolved(newSolved);
+  const openPopup = (question) => {
+    setCurrentQuestion(question);
+    setUserCode(question.problem);
+  };
+
+  const closePopup = () => {
+    setCurrentQuestion(null);
+    setUserCode("");
+  };
+
+  const navigateQuestion = (direction) => {
+    if (!currentQuestion) return;
+    const currentIndex = questions.findIndex(q => q.id === currentQuestion.id);
+    const newIndex = currentIndex + direction;
+    if (newIndex >= 0 && newIndex < questions.length) {
+      openPopup(questions[newIndex]);
+    }
   };
 
   return (
-    <div className="flex flex-col items-center p-4">
-      <h1 className="text-2xl font-bold mb-4">Bug Bingo ({language})</h1>
-      <div className="grid grid-cols-3 gap-2">
-        {problems[language].map((bug, index) => (
-          <div key={index} className={`p-4 text-center cursor-pointer border ${solved[index] ? "bg-green-400" : "bg-gray-200"}`} onClick={() => handleSolve(index)}>
-            {bug}
+    <div className="game-container">
+      <h1 className="game-title">Bug Bingo - {userInformation?.language} Edition</h1>
+      <div className="game-grid">
+        {questions.slice(0, 9).map((question, index) => (
+          <div key={question.id} className={`game-card ${solved[question.id] ? "solved" : ""}`} onClick={() => openPopup(question)}>
+            {solved[question.id] ? "✔️" : index + 1}
           </div>
         ))}
       </div>
-      <button className="mt-4 p-2 bg-blue-500 text-white" onClick={() => console.log("Submit Score")}>Submit</button>
+
+      {currentQuestion && (
+        <div className="popup-overlay">
+          <div className="popup">
+            <button className="close-btn" onClick={closePopup}>✖</button>
+            <h2>Problem</h2>
+            <textarea value={userCode} onChange={(e) => setUserCode(e.target.value)} className="popup-textarea" />
+            <p>Expected Output: {currentQuestion.expected_output}</p>
+            <button className="game-check-btn" onClick={handleCheck}>Check</button>
+            <div className="popup-nav">
+              <button onClick={() => navigateQuestion(-1)}>Previous</button>
+              <button onClick={() => navigateQuestion(1)}>Next</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default Game;
