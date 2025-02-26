@@ -8,7 +8,7 @@ const Game = () => {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [userCode, setUserCode] = useState("");
   const navigate = useNavigate();
-  const API_URL = "https://tanubhavjuneja.pythonanywhere.com/bingo";
+  const API_URL = "https://bug-bingo-backend.onrender.com";
   const userInformation = JSON.parse(localStorage.getItem("userInformation"));
   useEffect(() => {
     if (!userInformation) {
@@ -18,7 +18,6 @@ const Game = () => {
     fetch(`${API_URL}/set_questions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      mode: "no-cors",
       body: JSON.stringify({ language: userInformation.language.toLowerCase() || "python" })
     })
       .then(res => res.ok ? res.json() : Promise.reject(`HTTP error! Status: ${res.status}`))
