@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./style.css";
 export default function Registration() {
@@ -6,6 +6,11 @@ export default function Registration() {
   const [rollno, setRollNo] = useState("");
   const [language, setLanguage] = useState("python");
   const navigate = useNavigate();
+  useEffect(() => {
+    if (localStorage.getItem("userInformation")) {
+      navigate("/game");
+    }
+  }, [navigate]);
   const handleSubmit = () => {
     localStorage.setItem("userInformation", JSON.stringify({ name, rollno, language }));
     navigate("/game");
