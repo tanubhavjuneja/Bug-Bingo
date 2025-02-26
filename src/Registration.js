@@ -7,10 +7,26 @@ export default function Registration() {
   const [language, setLanguage] = useState("python");
   const navigate = useNavigate();
   useEffect(() => {
+    wakeServer();
     if (localStorage.getItem("userInformation")) {
       navigate("/game");
     }
   }, [navigate]);
+  const wakeServer = async () => {
+    const url = "https://bug-bingo-backend.onrender.com/ping";
+    const checkServer = () => {
+      fetch(url, { method: "GET" })
+        .then((response) => {
+          if (response.ok) {
+            console.log("Server is awake!");
+          } else {
+            setTimeout(checkServer, 1000);
+          }
+        })
+        .catch(() => setTimeout(checkServer, 1000));
+    };
+    checkServer();
+  };
   const handleSubmit = () => {
     localStorage.setItem("userInformation", JSON.stringify({ name, rollno, language }));
     navigate("/game");
