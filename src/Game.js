@@ -6,7 +6,7 @@ const Game = () => {
   const [solved, setSolved] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(null);
   const [userCode, setUserCode] = useState("");
-  const [timeLeft, setTimeLeft] = useState(200); 
+  const [timeLeft, setTimeLeft] = useState(200);
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(null);
   const navigate = useNavigate();
@@ -28,13 +28,11 @@ const Game = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ language: userInformation.language.toLowerCase() })
       })
-        .then((res) => res.ok ? res.json() : Promise.reject(`HTTP error! Status: ${res.status}`))
+        .then((res) => res.json())
         .then((data) => {
           if (Array.isArray(data) && data.length >= 9) {
             setQuestions(data.slice(0, 9));
             setSolved(Array(9).fill(false));
-          } else {
-            console.error("Insufficient questions:", data);
           }
         })
         .catch((err) => console.error("Fetch error:", err));
@@ -67,9 +65,7 @@ const Game = () => {
       const totalScore = solvedCount + completedLines.length;
       setScore(totalScore);
       const updatedUserInformation = { 
-        name: userInformation.name, 
-        rollno: userInformation.rollno, 
-        language: userInformation.language, 
+        ...userInformation,
         score: totalScore 
       };
       localStorage.setItem("userInformation", JSON.stringify(updatedUserInformation));
@@ -77,10 +73,7 @@ const Game = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedUserInformation)
-      })
-        .then(res => res.json())
-        .then(data => console.log("Score submitted:", data))
-        .catch(err => console.error("Error submitting score:", err));
+      });
     }
   }, [gameOver, solved, score, userInformation]);
   const handleCheck = () => {
@@ -104,6 +97,9 @@ const Game = () => {
             return newSolved;
           });
           closePopup();
+        } else if (result.message === "Cheating detected!") {
+          alert("Cheating detected! Score -1");
+          setScore((prev) => (prev > 0 ? prev - 1 : 0));
         } else {
           alert(result.message || "Incorrect output!");
         }
