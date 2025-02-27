@@ -118,13 +118,6 @@ const Game = () => {
     setCurrentIndex(null);
     setUserCode("");
   };
-  const navigateQuestion = (direction) => {
-    const newIndex = currentIndex + direction;
-    if (newIndex >= 0 && newIndex < questions.length) {
-      setCurrentIndex(newIndex);
-      setUserCode(questions[newIndex].problem);
-    }
-  };
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -168,10 +161,6 @@ const Game = () => {
             />
             <p>Expected Output: {questions[currentIndex].expected_output}</p>
             <button className="game-check-btn" onClick={handleCheck}>Check</button>
-            <div className="popup-nav">
-              <button onClick={() => navigateQuestion(-1)}>Previous</button>
-              <button onClick={() => navigateQuestion(1)}>Next</button>
-            </div>
           </div>
         </div>
       )}
