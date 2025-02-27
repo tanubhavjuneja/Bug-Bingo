@@ -100,12 +100,6 @@ const Game = () => {
         } else if (result.message === "Cheating detected!") {
           alert("Cheating detected! Score -1");
           setScore((prev) => (prev > 0 ? prev - 1 : 0));
-          return (
-            <div className="game-over">
-              <h2>You were caught cheating.</h2>
-              <p>Is this what your mother taught you? Cheating in a fun event to get some petty points? I have sympathy for your parents</p>
-            </div>
-          );
         } else {
           alert(result.message || "Incorrect output!");
         }
