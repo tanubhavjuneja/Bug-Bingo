@@ -9,7 +9,7 @@ export default function Registration() {
   useEffect(() => {
     wakeServer();
     if (localStorage.getItem("userInformation")) {
-      navigate("/game");
+      navigate("/game_final");
     }
   }, [navigate]);
   const wakeServer = async () => {
