@@ -29,7 +29,7 @@ export default function Registration() {
   };
   const handleSubmit = () => {
     localStorage.setItem("userInformation", JSON.stringify({ name, rollno, language }));
-    navigate("/game");
+    navigate("/game_final");
   };
   return (
     <div className="registration-container">
