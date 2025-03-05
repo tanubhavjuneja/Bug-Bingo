@@ -6,11 +6,11 @@ const Game = () => {
   const [solved, setSolved] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(null);
   const [userCode, setUserCode] = useState("");
-  const [timeLeft, setTimeLeft] = useState(200);
+  const [timeLeft, setTimeLeft] = useState(20);
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(null);
   const navigate = useNavigate();
-  const API_URL = "https://bug-bingo-backend.onrender.com";
+  const API_URL = "http://127.0.0.1:5000";
   const userInformation = JSON.parse(localStorage.getItem("userInformation"));
   useEffect(() => {
     if (userInformation?.score) {
@@ -78,7 +78,9 @@ const Game = () => {
   }, [gameOver, solved, score, userInformation]);
   const handleCheck = () => {
     if (gameOver || currentIndex === null) return;
+  
     const question = questions[currentIndex];
+    
     fetch(`${API_URL}/execute`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -90,6 +92,8 @@ const Game = () => {
     })
       .then((res) => res.json())
       .then((result) => {
+        let newScore = score;
+  
         if (result.correct) {
           setSolved((prev) => {
             const newSolved = [...prev];
@@ -99,13 +103,27 @@ const Game = () => {
           closePopup();
         } else if (result.message === "Cheating detected!") {
           alert("Cheating detected! Score -1");
-          setScore((prev) => (prev > 0 ? prev - 1 : 0));
+          newScore = Math.max(score - 1, 0); // Reduce score but not below 0
         } else {
           alert(result.message || "Incorrect output!");
         }
+  
+        // Update the score and submit it to the server
+        setScore(newScore);
+        const updatedUserInformation = { 
+          ...userInformation,
+          score: newScore
+        };
+        localStorage.setItem("userInformation", JSON.stringify(updatedUserInformation));
+  
+        fetch(`${API_URL}/submit_score`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedUserInformation)
+        });
       })
       .catch((err) => console.error("Execution error:", err));
-  };
+  };  
   const openPopup = (index) => {
     setCurrentIndex(index);
     setUserCode(questions[index].problem);
