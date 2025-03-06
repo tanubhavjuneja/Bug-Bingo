@@ -124,6 +124,10 @@ const Game = () => {
       })
       .catch((err) => console.error("Execution error:", err));
   };  
+  const handleBackToRegistration = () => {
+    localStorage.removeItem("userInformation");
+    window.location.reload();
+  };
   const openPopup = (index) => {
     setCurrentIndex(index);
     setUserCode(questions[index].problem);
@@ -178,6 +182,9 @@ const Game = () => {
           </div>
         </div>
       )}
+      <button className="back-to-registration" onClick={handleBackToRegistration}>
+        Back to Registration
+      </button>
     </div>
   );
 };
