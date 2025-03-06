@@ -10,7 +10,7 @@ const Game = () => {
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(null);
   const navigate = useNavigate();
-  const API_URL = "https://bug-bingo-backend.onrender.com";
+  const API_URL = "http://127.0.0.1:5000";
   const userInformation = JSON.parse(localStorage.getItem("userInformation"));
   useEffect(() => {
     if (userInformation?.score) {
