@@ -9,7 +9,7 @@ export default function Registration() {
   useEffect(() => {
     wakeServer();
     if (localStorage.getItem("userInformation")) {
-      navigate("/game_final");
+      navigate("/game");
     }
   }, [navigate]);
   const wakeServer = async () => {
@@ -29,7 +29,7 @@ export default function Registration() {
   };
   const handleSubmit = () => {
     localStorage.setItem("userInformation", JSON.stringify({ name, rollno, language }));
-    navigate("/game_final");
+    navigate("/game");
   };
   return (
     <div className="registration-container">

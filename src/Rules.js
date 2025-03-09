@@ -29,7 +29,7 @@ export default function BugBingoRules() {
         </div>
       </div>
       <div className="bug-bingo-button-container">
-        <button className="bug-bingo-button" onClick={() => window.location.href='/register'}>
+        <button className="bug-bingo-button" onClick={() => window.location.href='/registration'}>
           Go to Registration
         </button>
       </div>

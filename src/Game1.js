@@ -13,7 +13,7 @@ const Game = () => {
   const API_URL = "http://127.0.0.1:5000";
   const userInformation = JSON.parse(localStorage.getItem("userInformation"));
   useEffect(() => {
-    if (userInformation?.score) {
+    if (userInformation?.score !== undefined) {
       setScore(userInformation.score);
     }
   }, []);
@@ -23,15 +23,15 @@ const Game = () => {
       return;
     }
     if (score === null) {
-      fetch(`${API_URL}/set_questions`, {
+      fetch(`${API_URL}/set_questions1`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ language: userInformation.language.toLowerCase() })
       })
         .then((res) => res.json())
         .then((data) => {
-          if (Array.isArray(data) && data.length >= 9) {
-            setQuestions(data.slice(0, 9));
+          if (data?.questions?.length === 9) {   
+            setQuestions(data.questions);
             setSolved(Array(9).fill(false));
           }
         })
@@ -39,7 +39,7 @@ const Game = () => {
     }
   }, [navigate, score]);
   useEffect(() => {
-    if (gameOver || questions.length === 0 || score !== null) return;
+    if (score !== null || gameOver || questions.length === 0) return;
     const timer = setInterval(() => {
       setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
@@ -85,30 +85,34 @@ const Game = () => {
       body: JSON.stringify({
         user: userInformation,
         code: userCode.trim(),
-        expected_output: question.expected_output.trim(),
+        test_cases: questions[currentIndex].test_cases,
         language: userInformation?.language.toLowerCase(),
       })
     })
       .then((res) => res.json())
       .then((result) => {
-        if (result.correct) {
-          setSolved((prev) => {
-            const newSolved = [...prev];
-            newSolved[currentIndex] = true;
-            return newSolved;
-          });
-          closePopup();
+        if (Array.isArray(result)) {
+            const passedCount = result.filter(test => test.correct).length;
+            alert(`Test Cases Passed: ${passedCount}/${result.length}`);
+            if (passedCount === result.length) {
+                setSolved((prev) => {
+                    const newSolved = [...prev];
+                    newSolved[currentIndex] = true;
+                    return newSolved;
+                });
+                closePopup();
+            }
         } else if (result.message === "Cheating detected!") {
-          alert("Cheating detected! Score -1");
-          setScore((prev) => (prev > 0 ? prev - 1 : 0));
-        }else if (result.message === "SQL injection detected!") {
-          alert("SQL injection detected! Submission rejected. Score -1");
-          setScore((prev) => (prev > 0 ? prev - 1 : 0));
+            alert("Cheating detected! Score -1");
+            setScore((prev) => (prev > 0 ? prev - 1 : 0));
+        } else if (result.message === "SQL injection detected!") {
+            alert("SQL injection detected! Submission rejected. Score -1");
+            setScore((prev) => (prev > 0 ? prev - 1 : 0));
         } else {
-          alert(result.message || "Incorrect output!");
+            alert(result.message || "Incorrect output!");
         }
-      })
-      .catch((err) => console.error("Execution error:", err));
+    })
+    .catch((err) => console.error("Execution error:", err));
   };
   const handleBackToRegistration = () => {
     localStorage.removeItem("userInformation");
@@ -116,7 +120,7 @@ const Game = () => {
   };
   const openPopup = (index) => {
     setCurrentIndex(index);
-    setUserCode(questions[index].problem);
+    setUserCode(questions[index].function);
   };
   const closePopup = () => {
     setCurrentIndex(null);
@@ -135,6 +139,9 @@ const Game = () => {
         <p>Name: {userInformation.name}</p>
         <p>Roll No: {userInformation.rollno}</p>
         <p>Language: {userInformation.language}</p>
+        <button className="back-to-registration" onClick={handleBackToRegistration}>
+          Back to Registration
+        </button>
       </div>
     );
   }
@@ -158,12 +165,14 @@ const Game = () => {
           <div className="popup">
             <button className="close-btn" onClick={closePopup}>✖</button>
             <h2>Problem</h2>
+            <h2>{questions[currentIndex].explanation}</h2>
             <textarea
               value={userCode}
               onChange={(e) => setUserCode(e.target.value)}
               className="popup-textarea"
             />
-            <p>Expected Output: {questions[currentIndex].expected_output}</p>
+            <p>Test Case: {questions[currentIndex].test_cases[0].input}</p>
+            <p>Expected Output: {questions[currentIndex].test_cases[0].expected_output}</p>
             <button className="game-check-btn" onClick={handleCheck}>Check</button>
           </div>
         </div>

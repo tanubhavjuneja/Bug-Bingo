@@ -6,7 +6,7 @@ const Game = () => {
   const [solved, setSolved] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(null);
   const [userCode, setUserCode] = useState("");
-  const [timeLeft, setTimeLeft] = useState(20);
+  const [timeLeft, setTimeLeft] = useState(200);
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(null);
   const navigate = useNavigate();
