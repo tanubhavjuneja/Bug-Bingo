@@ -180,6 +180,13 @@ const Game = () => {
       <button className="back-to-registration" onClick={handleBackToRegistration}>
         Back to Registration
       </button>
+      <button 
+        className="submit-score-btn" 
+        onClick={() => setGameOver(true)}
+        disabled={score !== null || gameOver}
+      >
+        Submit Score
+      </button>
     </div>
   );
 };

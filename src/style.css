@@ -203,7 +203,7 @@
     margin-top: 20px;
     padding: 10px 20px;
     font-size: 16px;
-    background-color: #d9534f;
+    background-color: #007bff;
     color: white;
     border: none;
     border-radius: 5px;
@@ -212,7 +212,7 @@
   }
   
   .back-to-registration:hover {
-    background-color: #c9302c;
+    background-color: #0056b3;
   }
   .bug-bingo-container {
     max-width: 600px;
@@ -283,5 +283,26 @@
   
   .bug-bingo-button:hover {
     background-color: #0056b3;
+  }
+  .submit-score-btn {
+    background-color: #007bff;
+    color: white;
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-left: 50px;
+  }
+  
+  .submit-score-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  .submit-score-btn:disabled {
+    background-color: #a0c4ff;
+    cursor: not-allowed;
   }
   
