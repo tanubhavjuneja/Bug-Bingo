@@ -11,7 +11,11 @@ const Game = () => {
   const [score, setScore] = useState(null);
   const navigate = useNavigate();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   const API_URL = "http://127.0.0.1:5000";
+=======
+  const API_URL = "http://10.34.17.22:5000";
+>>>>>>> Stashed changes
 =======
   const API_URL = "http://10.34.17.22:5000";
 >>>>>>> Stashed changes
