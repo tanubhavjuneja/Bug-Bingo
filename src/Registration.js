@@ -13,7 +13,7 @@ export default function Registration() {
     }
   }, [navigate]);
   const wakeServer = async () => {
-    const url = "https://bug-bingo-backend.onrender.com/ping";
+    const url = "http://10.34.17.22:5000/ping";
     const checkServer = () => {
       fetch(url, { method: "GET" })
         .then((response) => {
