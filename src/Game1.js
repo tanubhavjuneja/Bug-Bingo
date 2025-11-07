@@ -10,19 +10,7 @@ const Game = () => {
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(null);
   const navigate = useNavigate();
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-  const API_URL = "http://127.0.0.1:5000";
-=======
-  const API_URL = "http://10.34.17.22:5000";
->>>>>>> Stashed changes
-=======
-  const API_URL = "http://10.34.17.22:5000";
->>>>>>> Stashed changes
-=======
   const API_URL = "https://bug-bingo-backend.onrender.com";
->>>>>>> Stashed changes
   const userInformation = JSON.parse(localStorage.getItem("userInformation"));
   useEffect(() => {
     if (userInformation?.score !== undefined) {
@@ -83,11 +71,6 @@ const Game = () => {
         score: totalScore 
       };
       localStorage.setItem("userInformation", JSON.stringify(updatedUserInformation));
-      fetch(`${API_URL}/submit_score`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedUserInformation)
-      });
     }
   }, [gameOver, solved, score, userInformation]);
   const handleCheck = () => {

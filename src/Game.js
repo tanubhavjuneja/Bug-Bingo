@@ -71,11 +71,6 @@ const Game = () => {
         score: totalScore 
       };
       localStorage.setItem("userInformation", JSON.stringify(updatedUserInformation));
-      fetch(`${API_URL}/submit_score`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedUserInformation)
-      });
     }
   }, [gameOver, solved, score, userInformation]);
   const handleCheck = () => {
@@ -117,12 +112,6 @@ const Game = () => {
           score: newScore
         };
         localStorage.setItem("userInformation", JSON.stringify(updatedUserInformation));
-  
-        fetch(`${API_URL}/submit_score`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedUserInformation)
-        });
       })
       .catch((err) => console.error("Execution error:", err));
   };  
