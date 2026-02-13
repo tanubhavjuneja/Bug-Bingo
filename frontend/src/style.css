@@ -1,0 +1,308 @@
+.registration-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+  }
+  .registration-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+  }
+  .registration-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+  .input-field {
+    width: 90%;
+    padding: 10px;
+    margin: 8px 8px 8px 8px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: 0.3s;
+  }
+  .input-field:focus {
+    outline: none;
+    border-color: #00c6ff;
+    box-shadow: 0 0 8px rgba(0, 198, 255, 0.5);
+  }
+  .submit-button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 12px;
+    background: #007bff;
+    color: white;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .submit-button:hover {
+    background: #0056b3;
+  }
+  .game-container {
+    text-align: center;
+    padding: 20px;
+  }
+  .game-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  .game-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+    justify-content: center;
+  }
+  .game-card {
+    background-color: #f8f9fa;
+    border: 2px solid #007bff;
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+  }
+  .game-textarea {
+    width: 100%;
+    height: 100%;
+    font-size: 14px;
+    padding: 5px;
+    border: none;
+    resize: none;
+  }
+  .expected-output {
+    font-size: 14px;
+    color: #333;
+    margin-top: 8px;
+    background: #f9f9f9;
+    padding: 5px;
+    border-radius: 5px;
+  }
+  .game-check-btn {
+    margin-top: 5px;
+    padding: 5px 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  .solved {
+    background-color: #d4edda !important;
+    border: 2px solid #155724;
+  }
+  .tick {
+    font-size: 36px;
+    color: green;
+  }
+  .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .popup {
+    width: 80%;
+    height: 75%;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .popup-textarea {
+    width: 95%;
+    height: 200px;
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+  }
+  
+  .popup-nav {
+    display: flex;
+    justify-content: space-between;
+    width: 90%;
+  }
+  
+  .game-check-btn {
+    padding: 10px 20px;
+    margin: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .game-check-btn:hover {
+    background-color: #218838;
+  }
+  .game-over {
+    text-align: center;
+    margin: 50px auto;
+    padding: 20px;
+    max-width: 400px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+  }
+  
+  .game-over h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    color: #2c3e50;
+  }
+  
+  .game-over p {
+    font-size: 20px;
+    margin: 10px 0;
+    color: #34495e;
+  }
+  
+  .game-over p:first-of-type {
+    font-size: 28px;
+    font-weight: bold;
+    color: #e74c3c;
+  }
+  .back-to-registration {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+  }
+  
+  .back-to-registration:hover {
+    background-color: #0056b3;
+  }
+  .bug-bingo-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .bug-bingo-heading {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .bug-bingo-card {
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
+  
+  .bug-bingo-card-content p {
+    font-size: 16px;
+    color: #444;
+    margin: 10px 0;
+  }
+  
+  .bug-bingo-alert {
+    display: flex;
+    align-items: center;
+    background-color: #ffe5e5;
+    color: #d9534f;
+    padding: 10px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
+  
+  .bug-bingo-alert-icon {
+    margin-right: 10px;
+    font-size: 20px;
+  }
+  
+  .bug-bingo-alert-title {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .bug-bingo-button-container {
+    margin-top: 20px;
+  }
+  
+  .bug-bingo-button {
+    background-color: #007bff;
+    color: white;
+    font-size: 16px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .bug-bingo-button:hover {
+    background-color: #0056b3;
+  }
+  .submit-score-btn {
+    background-color: #007bff;
+    color: white;
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-left: 50px;
+  }
+  
+  .submit-score-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  .submit-score-btn:disabled {
+    background-color: #a0c4ff;
+    cursor: not-allowed;
+  }
+  
