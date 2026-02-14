@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "./style.css";
 
@@ -11,32 +11,41 @@ const Game = () => {
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(null);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const API_URL = "https://bug-bingo-backend.onrender.com";
-  const userInformation = useMemo(() => JSON.parse(localStorage.getItem("userInformation")), []);
 
+  // Load questions only once on mount
   useEffect(() => {
-    if (!userInformation) {
+    const userInfo = JSON.parse(localStorage.getItem("userInformation"));
+    
+    if (!userInfo) {
       navigate("/registration");
       return;
     }
-    // Don't fetch if we already have questions loaded
-    if (questions.length > 0) return;
+    
+    let isMounted = true;
     
     fetch(`${API_URL}/set_questions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ language: userInformation.language.toLowerCase() })
+      body: JSON.stringify({ language: userInfo.language.toLowerCase() })
     })
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data) && data.length >= 25) {
+        if (isMounted && Array.isArray(data) && data.length >= 25) {
           setQuestions(data.slice(0, 25));
           setSolved(Array(25).fill(false));
+          setIsLoading(false);
         }
       })
-      .catch((err) => console.error("Fetch error:", err));
-  }, [navigate, userInformation, API_URL, questions.length]);
+      .catch((err) => {
+        console.error("Fetch error:", err);
+        if (isMounted) setIsLoading(false);
+      });
+      
+    return () => { isMounted = false; };
+  }, []); // Empty dependency array - only run once
 
   useEffect(() => {
     if (gameOver || questions.length === 0) return;
@@ -73,13 +82,16 @@ const Game = () => {
   }, [gameOver, solved, score]);
 
   const submitScoreToDatabase = useCallback(async (finalScore) => {
+    const userInfo = JSON.parse(localStorage.getItem("userInformation"));
+    if (!userInfo) return;
+    
     try {
       const response = await fetch(`${API_URL}/submit_score`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: userInformation.name,
-          rollno: userInformation.rollno,
+          name: userInfo.name,
+          rollno: userInfo.rollno,
           score: finalScore,
           round: "preliminary"
         })
@@ -94,19 +106,20 @@ const Game = () => {
     } catch (error) {
       console.error("Error submitting score:", error);
     }
-  }, [API_URL, userInformation]);
+  }, [API_URL]);
 
   // Submit score to database when game ends
   useEffect(() => {
-    if (score !== null && !scoreSubmitted && userInformation) {
+    if (score !== null && !scoreSubmitted) {
       submitScoreToDatabase(score);
     }
-  }, [score, scoreSubmitted, userInformation, submitScoreToDatabase]);
+  }, [score, scoreSubmitted, submitScoreToDatabase]);
 
   const handleCheck = () => {
     if (gameOver || currentIndex === null) return;
   
     const question = questions[currentIndex];
+    const userInfo = JSON.parse(localStorage.getItem("userInformation"));
     
     fetch(`${API_URL}/execute`, {
       method: "POST",
@@ -114,7 +127,7 @@ const Game = () => {
       body: JSON.stringify({
         code: userCode.trim(),
         expected_output: question.expected_output.trim(),
-        language: userInformation?.language.toLowerCase(),
+        language: userInfo?.language.toLowerCase(),
       })
     })
       .then((res) => res.json())
@@ -155,14 +168,23 @@ const Game = () => {
     return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
+  if (isLoading) {
+    return (
+      <div className="game-container">
+        <h1 className="game-title">Loading...</h1>
+      </div>
+    );
+  }
+
   if (score !== null) {
+    const userInfo = JSON.parse(localStorage.getItem("userInformation"));
     return (
       <div className="game-over">
         <h2>Game Over</h2>
         <p>Your Score: {score}</p>
-        <p>Name: {userInformation.name}</p>
-        <p>Roll No: {userInformation.rollno}</p>
-        <p>Language: {userInformation.language}</p>
+        <p>Name: {userInfo?.name}</p>
+        <p>Roll No: {userInfo?.rollno}</p>
+        <p>Language: {userInfo?.language}</p>
         <button className="back-to-registration" onClick={handleBackToRegistration}>
           Back to Registration
         </button>
@@ -172,7 +194,7 @@ const Game = () => {
 
   return (
     <div className="game-container">
-      <h1 className="game-title">Bug Bingo - {userInformation?.language} Edition (Preliminary Round)</h1>
+      <h1 className="game-title">Bug Bingo - {JSON.parse(localStorage.getItem("userInformation"))?.language} Edition (Preliminary Round)</h1>
       <div className="timer">Time Left: {formatTime(timeLeft)}</div>
       <div className="game-grid">
         {questions.map((question, index) => (
