@@ -13,7 +13,14 @@ import requests
 import pymysql
 
 app = Flask(__name__)
-CORS(app)
+# Enable CORS for all domains with support for credentials
+CORS(app, resources={
+    r"/*": {
+        "origins": ["https://bug-bingo.vercel.app", "http://localhost:3000"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 
 # Load .env file
 load_dotenv()
@@ -64,6 +71,10 @@ CPP_QUESTIONS1 = load_questions1("cpp.json")
 @app.route('/ping', methods=['GET'])
 def ping():
     return jsonify({"message": "Server is awake!"}), 200
+
+@app.route('/submit_score', methods=['OPTIONS'])
+def submit_score_options():
+    return jsonify({"status": "ok"}), 200
 
 @app.route('/submit_score', methods=['POST'])
 def submit_score():
