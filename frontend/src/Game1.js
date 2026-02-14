@@ -16,7 +16,7 @@ const Game = () => {
     if (userInformation?.score !== undefined) {
       setScore(userInformation.score);
     }
-  }, []);
+  }, [userInformation?.score]);
   useEffect(() => {
     if (!userInformation) {
       navigate("/");
@@ -37,7 +37,7 @@ const Game = () => {
         })
         .catch((err) => console.error("Fetch error:", err));
     }
-  }, [navigate, score]);
+  }, [navigate, score, userInformation]);
   useEffect(() => {
     if (score !== null || gameOver || questions.length === 0) return;
     const timer = setInterval(() => {
@@ -75,7 +75,6 @@ const Game = () => {
   }, [gameOver, solved, score, userInformation]);
   const handleCheck = () => {
     if (gameOver || currentIndex === null) return;
-    const question = questions[currentIndex];
     fetch(`${API_URL}/execute1`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

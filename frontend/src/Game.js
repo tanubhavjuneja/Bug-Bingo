@@ -16,7 +16,7 @@ const Game = () => {
     if (userInformation?.score) {
       setScore(userInformation.score);
     }
-  }, []);
+  }, [userInformation?.score]);
   useEffect(() => {
     if (!userInformation) {
       navigate("/");
@@ -37,7 +37,7 @@ const Game = () => {
         })
         .catch((err) => console.error("Fetch error:", err));
     }
-  }, [navigate, score]);
+  }, [navigate, score, userInformation]);
   useEffect(() => {
     if (gameOver || questions.length === 0 || score !== null) return;
     const timer = setInterval(() => {
