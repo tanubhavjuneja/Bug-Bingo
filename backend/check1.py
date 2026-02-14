@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from mysql.connector import Error
 from dotenv import load_dotenv
 import subprocess
 import tempfile
@@ -38,7 +37,7 @@ def get_db_connection():
     try:
         conn = pymysql.connect(**DB_CONFIG)
         return conn
-    except Error as e:
+    except Exception as e:
         print(f"Error connecting to MySQL: {e}")
         return None
 def load_questions(file_path):
@@ -107,7 +106,7 @@ def submit_score():
             cur.close()
             conn.close()
             return jsonify({"status": "success"})
-        except Error as e:
+        except Exception as e:
             conn.rollback()
             cur.close()
             conn.close()
