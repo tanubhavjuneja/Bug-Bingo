@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import "./style.css";
 
@@ -11,7 +11,6 @@ const Game = () => {
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(null);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
-  const hasFetched = useRef(false);
   const navigate = useNavigate();
   const API_URL = "https://bug-bingo-backend.onrender.com";
   const userInformation = useMemo(() => JSON.parse(localStorage.getItem("userInformation")), []);
@@ -21,8 +20,8 @@ const Game = () => {
       navigate("/registration");
       return;
     }
-    if (hasFetched.current) return;
-    hasFetched.current = true;
+    // Don't fetch if we already have questions loaded
+    if (questions.length > 0) return;
     
     fetch(`${API_URL}/set_questions`, {
       method: "POST",
@@ -37,7 +36,7 @@ const Game = () => {
         }
       })
       .catch((err) => console.error("Fetch error:", err));
-  }, [navigate, userInformation, API_URL]);
+  }, [navigate, userInformation, API_URL, questions.length]);
 
   useEffect(() => {
     if (gameOver || questions.length === 0) return;
