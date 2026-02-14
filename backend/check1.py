@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from mysql.connector import Error
+from dotenv import load_dotenv
 import subprocess
 import tempfile
 import random
@@ -8,8 +10,30 @@ import json
 import os
 import threading 
 import requests
+import pymysql
+
 app = Flask(__name__)
 CORS(app)
+
+# Load .env file
+load_dotenv()
+
+# Database configuration
+DB_CONFIG = {
+    "host": os.getenv("DB_HOST", "127.0.0.1"),
+    "database": os.getenv("DB_DATABASE"),
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASSWORD"),
+    "port": int(os.getenv("DB_PORT", 3306)),
+}
+
+def get_db_connection():
+    try:
+        conn = pymysql.connect(**DB_CONFIG)
+        return conn
+    except Error as e:
+        print(f"Error connecting to MySQL: {e}")
+        return None
 def load_questions(file_path):
     questions = []
     if not os.path.exists(file_path):
@@ -40,6 +64,45 @@ CPP_QUESTIONS1 = load_questions1("cpp.json")
 @app.route('/ping', methods=['GET'])
 def ping():
     return jsonify({"message": "Server is awake!"}), 200
+
+@app.route('/submit_score', methods=['POST'])
+def submit_score():
+    data = request.get_json()
+    name = data.get('name')
+    rollno = data.get('rollno')
+    score = data.get('score')
+    round_type = data.get('round', 'preliminary')  # 'preliminary' or 'final'
+    
+    if name and rollno and score is not None:
+        conn = get_db_connection()
+        if conn is None:
+            return jsonify({"status": "error", "message": "Database connection failed"}), 500
+        try:
+            cur = conn.cursor()
+            # Use different columns for preliminary and final round scores
+            if round_type == 'final':
+                cur.execute("""
+                    INSERT INTO scores (name, rollno, final_score)
+                    VALUES (%s, %s, %s)
+                    ON DUPLICATE KEY UPDATE name = VALUES(name), final_score = VALUES(final_score);
+                """, (name, rollno, score))
+            else:
+                cur.execute("""
+                    INSERT INTO scores (name, rollno, preliminary_score)
+                    VALUES (%s, %s, %s)
+                    ON DUPLICATE KEY UPDATE name = VALUES(name), preliminary_score = VALUES(preliminary_score);
+                """, (name, rollno, score))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return jsonify({"status": "success"})
+        except Error as e:
+            conn.rollback()
+            cur.close()
+            conn.close()
+            return jsonify({"status": "error", "message": str(e)}), 500
+    else:
+        return jsonify({"status": "error", "message": "Missing required fields"}), 400
 @app.route('/set_questions', methods=['POST'])
 def set_questions():
     data = request.get_json()

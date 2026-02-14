@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "./style.css";
-const Game = () => {
+
+const Game1 = () => {
   const [questions, setQuestions] = useState([]);
   const [solved, setSolved] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(null);
@@ -9,50 +10,49 @@ const Game = () => {
   const [timeLeft, setTimeLeft] = useState(1200);
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(null);
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const navigate = useNavigate();
   const API_URL = "https://bug-bingo-backend.onrender.com";
   const userInformation = JSON.parse(localStorage.getItem("userInformation"));
-  useEffect(() => {
-    if (userInformation?.score !== undefined) {
-      setScore(userInformation.score);
-    }
-  }, [userInformation?.score]);
+
   useEffect(() => {
     if (!userInformation) {
-      navigate("/");
+      navigate("/registration");
       return;
     }
-    if (score === null) {
-      fetch(`${API_URL}/set_questions1`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ language: userInformation.language.toLowerCase() })
+    fetch(`${API_URL}/set_questions1`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ language: userInformation.language.toLowerCase() })
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.questions?.length === 25) {   
+          setQuestions(data.questions);
+          setSolved(Array(25).fill(false));
+        }
       })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data?.questions?.length === 25) {   
-            setQuestions(data.questions);
-            setSolved(Array(25).fill(false));
-          }
-        })
-        .catch((err) => console.error("Fetch error:", err));
-    }
-  }, [navigate, score, userInformation]);
+      .catch((err) => console.error("Fetch error:", err));
+  }, [navigate, userInformation, API_URL]);
+
   useEffect(() => {
-    if (score !== null || gameOver || questions.length === 0) return;
+    if (gameOver || questions.length === 0) return;
     const timer = setInterval(() => {
       setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
     return () => clearInterval(timer);
-  }, [gameOver, questions, score]);
+  }, [gameOver, questions]);
+
   useEffect(() => {
     if (timeLeft === 0) setGameOver(true);
   }, [timeLeft]);
+
   useEffect(() => {
     if (solved.length > 0 && solved.every((status) => status)) {
       setGameOver(true);
     }
   }, [solved]);
+
   useEffect(() => {
     if (gameOver && score === null) {
       const solvedCount = solved.filter(Boolean).length;
@@ -66,13 +66,40 @@ const Game = () => {
       const completedLines = lines.filter(line => line.every(index => solved[index]));
       const totalScore = solvedCount + completedLines.length;
       setScore(totalScore);
-      const updatedUserInformation = { 
-        ...userInformation,
-        score: totalScore 
-      };
-      localStorage.setItem("userInformation", JSON.stringify(updatedUserInformation));
     }
-  }, [gameOver, solved, score, userInformation]);
+  }, [gameOver, solved, score]);
+
+  const submitScoreToDatabase = useCallback(async (finalScore) => {
+    try {
+      const response = await fetch(`${API_URL}/submit_score`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: userInformation.name,
+          rollno: userInformation.rollno,
+          score: finalScore,
+          round: "final"
+        })
+      });
+      
+      if (response.ok) {
+        console.log("Score submitted successfully");
+        setScoreSubmitted(true);
+      } else {
+        console.error("Failed to submit score");
+      }
+    } catch (error) {
+      console.error("Error submitting score:", error);
+    }
+  }, [API_URL, userInformation]);
+
+  // Submit score to database when game ends
+  useEffect(() => {
+    if (score !== null && !scoreSubmitted && userInformation) {
+      submitScoreToDatabase(score);
+    }
+  }, [score, scoreSubmitted, userInformation, submitScoreToDatabase]);
+
   const handleCheck = () => {
     if (gameOver || currentIndex === null) return;
     fetch(`${API_URL}/execute1`, {
@@ -99,34 +126,36 @@ const Game = () => {
                 closePopup();
             }
         } else if (result.message === "Cheating detected!") {
-            alert("Cheating detected! Score -1");
-            setScore((prev) => (prev > 0 ? prev - 1 : 0));
+            alert("Cheating detected!");
         } else if (result.message === "SQL injection detected!") {
-            alert("SQL injection detected! Submission rejected. Score -1");
-            setScore((prev) => (prev > 0 ? prev - 1 : 0));
+            alert("SQL injection detected! Submission rejected.");
         } else {
             alert(result.message || "Incorrect output!");
         }
     })
     .catch((err) => console.error("Execution error:", err));
   };
+
   const handleBackToRegistration = () => {
-    localStorage.removeItem("userInformation");
-    window.location.reload();
+    navigate("/registration");
   };
+
   const openPopup = (index) => {
     setCurrentIndex(index);
     setUserCode(questions[index].function);
   };
+
   const closePopup = () => {
     setCurrentIndex(null);
     setUserCode("");
   };
+
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
   };
+
   if (score !== null) {
     return (
       <div className="game-over">
@@ -141,9 +170,10 @@ const Game = () => {
       </div>
     );
   }
+
   return (
     <div className="game-container">
-      <h1 className="game-title">Bug Bingo - {userInformation?.language} Edition</h1>
+      <h1 className="game-title">Bug Bingo - {userInformation?.language} Edition (Final Round)</h1>
       <div className="timer">Time Left: {formatTime(timeLeft)}</div>
       <div className="game-grid">
         {questions.map((question, index) => (
@@ -179,11 +209,12 @@ const Game = () => {
       <button 
         className="submit-score-btn" 
         onClick={() => setGameOver(true)}
-        disabled={score !== null || gameOver}
+        disabled={gameOver}
       >
         Submit Score
       </button>
     </div>
   );
 };
-export default Game;
+
+export default Game1;
