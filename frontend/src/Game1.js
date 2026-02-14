@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import "./style.css";
 
@@ -13,7 +13,7 @@ const Game1 = () => {
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const navigate = useNavigate();
   const API_URL = "https://bug-bingo-backend.onrender.com";
-  const userInformation = JSON.parse(localStorage.getItem("userInformation"));
+  const userInformation = useMemo(() => JSON.parse(localStorage.getItem("userInformation")), []);
 
   useEffect(() => {
     if (!userInformation) {
