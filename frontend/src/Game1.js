@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./style.css";
 
@@ -10,7 +10,6 @@ const Game1 = () => {
   const [timeLeft, setTimeLeft] = useState(1200);
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(null);
-  const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const API_URL = "https://bug-bingo-backend.onrender.com";
@@ -80,40 +79,6 @@ const Game1 = () => {
       setScore(totalScore);
     }
   }, [gameOver, solved, score]);
-
-  const submitScoreToDatabase = useCallback(async (finalScore) => {
-    const userInfo = JSON.parse(localStorage.getItem("userInformation"));
-    if (!userInfo) return;
-    
-    try {
-      const response = await fetch(`${API_URL}/submit_score`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: userInfo.name,
-          rollno: userInfo.rollno,
-          score: finalScore,
-          round: "final"
-        })
-      });
-      
-      if (response.ok) {
-        console.log("Score submitted successfully");
-        setScoreSubmitted(true);
-      } else {
-        console.error("Failed to submit score");
-      }
-    } catch (error) {
-      console.error("Error submitting score:", error);
-    }
-  }, [API_URL]);
-
-  // Submit score to database when game ends
-  useEffect(() => {
-    if (score !== null && !scoreSubmitted) {
-      submitScoreToDatabase(score);
-    }
-  }, [score, scoreSubmitted, submitScoreToDatabase]);
 
   const handleCheck = () => {
     if (gameOver || currentIndex === null) return;

@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from dotenv import load_dotenv
 import subprocess
 import tempfile
 import random
@@ -9,7 +8,6 @@ import json
 import os
 import threading 
 import requests
-import pymysql
 
 app = Flask(__name__)
 # Enable CORS for all domains with support for credentials
@@ -21,25 +19,6 @@ CORS(app, resources={
     }
 })
 
-# Load .env file
-load_dotenv()
-
-# Database configuration
-DB_CONFIG = {
-    "host": os.getenv("DB_HOST", "127.0.0.1"),
-    "database": os.getenv("DB_DATABASE"),
-    "user": os.getenv("DB_USER"),
-    "password": os.getenv("DB_PASSWORD"),
-    "port": int(os.getenv("DB_PORT", 3306)),
-}
-
-def get_db_connection():
-    try:
-        conn = pymysql.connect(**DB_CONFIG)
-        return conn
-    except Exception as e:
-        print(f"Error connecting to MySQL: {e}")
-        return None
 def load_questions(file_path):
     questions = []
     if not os.path.exists(file_path):
@@ -57,62 +36,24 @@ def load_questions(file_path):
                 "expected_output": expected_output.strip()
             })
     return questions
+
 PY_QUESTIONS = load_questions("problems_python.txt")
 CPP_QUESTIONS = load_questions("problems_cpp.txt")
+
 def load_questions1(file_path):
     if not os.path.exists(file_path):
         return []
     with open(file_path, "r") as file:
         questions = json.load(file)
     return questions
+
 PY_QUESTIONS1 = load_questions1("python.json")
 CPP_QUESTIONS1 = load_questions1("cpp.json")
+
 @app.route('/ping', methods=['GET'])
 def ping():
     return jsonify({"message": "Server is awake!"}), 200
 
-@app.route('/submit_score', methods=['OPTIONS'])
-def submit_score_options():
-    return jsonify({"status": "ok"}), 200
-
-@app.route('/submit_score', methods=['POST'])
-def submit_score():
-    data = request.get_json()
-    name = data.get('name')
-    rollno = data.get('rollno')
-    score = data.get('score')
-    round_type = data.get('round', 'preliminary')  # 'preliminary' or 'final'
-    
-    if name and rollno and score is not None:
-        conn = get_db_connection()
-        if conn is None:
-            return jsonify({"status": "error", "message": "Database connection failed"}), 500
-        try:
-            cur = conn.cursor()
-            # Use different columns for preliminary and final round scores
-            if round_type == 'final':
-                cur.execute("""
-                    INSERT INTO scores (name, rollno, final_score)
-                    VALUES (%s, %s, %s)
-                    ON DUPLICATE KEY UPDATE name = VALUES(name), final_score = VALUES(final_score);
-                """, (name, rollno, score))
-            else:
-                cur.execute("""
-                    INSERT INTO scores (name, rollno, preliminary_score)
-                    VALUES (%s, %s, %s)
-                    ON DUPLICATE KEY UPDATE name = VALUES(name), preliminary_score = VALUES(preliminary_score);
-                """, (name, rollno, score))
-            conn.commit()
-            cur.close()
-            conn.close()
-            return jsonify({"status": "success"})
-        except Exception as e:
-            conn.rollback()
-            cur.close()
-            conn.close()
-            return jsonify({"status": "error", "message": str(e)}), 500
-    else:
-        return jsonify({"status": "error", "message": "Missing required fields"}), 400
 @app.route('/set_questions', methods=['POST'])
 def set_questions():
     data = request.get_json()
@@ -122,6 +63,7 @@ def set_questions():
         return jsonify({"error": "No questions available"}), 404
     selected_questions = random.sample(questions, min(25, len(questions)))
     return jsonify(selected_questions)
+
 @app.route('/set_questions1', methods=['POST'])
 def set_questions1():
     data = request.get_json()
@@ -132,14 +74,17 @@ def set_questions1():
     selected_questions = random.sample(questions, min(25, len(questions)))
     response = {"questions": selected_questions}
     return jsonify(response)
+
 @app.route('/execute', methods=['POST'])
 def execute():
     data = request.json
     user_code = data.get("code", "").strip()
     expected_output = data.get("expected_output", "").strip()
     language = data.get("language", "python").lower()
+    
     if not user_code:
         return jsonify({"incorrect": False, "message": "No code provided!"})
+    
     try:
         if language == "python":
             suffix = ".py"
@@ -151,8 +96,9 @@ def execute():
             output_command = "cout"
         else:
             return jsonify({"incorrect": False, "message": "Unsupported language!"})
+        
         code_lines = user_code.splitlines()
-        if len(expected_output)>1:
+        if len(expected_output) > 1:
             cpp_output_block = ""
             for line in code_lines:
                 line = line.strip()
@@ -172,9 +118,11 @@ def execute():
                             if expected_output in cpp_output_block:
                                 return jsonify({"incorrect": False, "message": "Cheating detected!"})
                             cpp_output_block = ""
+        
         with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=suffix) as temp_file:
             temp_file.write(user_code)
             temp_file_name = temp_file.name
+        
         if language == "cpp":
             compile_result = subprocess.run(
                 command[0:3] + [temp_file_name, temp_file_name + ".out"],
@@ -196,15 +144,18 @@ def execute():
                 text=True,
                 timeout=3
             )
+        
         actual_output = result.stdout.strip()
         if actual_output == expected_output:
             return jsonify({"correct": True})
         else:
             return jsonify({"incorrect": False, "message": f"Expected: {expected_output}, Got: {actual_output}"})
+    
     except subprocess.TimeoutExpired:
         return jsonify({"incorrect": False, "message": "Code execution timed out!"})
     except Exception as e:
         return jsonify({"incorrect": False, "message": f"Error: {str(e)}"})
+
 @app.route('/execute1', methods=['POST'])
 def execute1():
     data = request.json
@@ -212,8 +163,10 @@ def execute1():
     test_cases = data.get("test_cases", [])
     language = data.get("language", "python").lower()
     user_info = data.get("user", {})
+    
     if not user_code:
         return jsonify({"incorrect": False, "message": "No code provided!"})
+    
     try:
         if language == "python":
             suffix = ".py"
@@ -225,22 +178,26 @@ def execute1():
             output_command = "cout"
         else:
             return jsonify({"incorrect": False, "message": "Unsupported language!"})
+        
         code_lines = user_code.splitlines()
         for line in code_lines:
             line = line.strip()
             if output_command in line:
                 return jsonify({"incorrect": False, "message": "Cheating detected!"})
+        
         start_time = time.time()
-        results=[]
-        correct=0
+        results = []
+        correct = 0
+        
         for i, test_case in enumerate(test_cases[:5]):
             expected_output = test_case["expected_output"].strip()
             input_data = test_case.get("input", "")
-            user_code=user_code+"\n"+input_data
+            user_code_with_input = user_code + "\n" + input_data
+            
             with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=suffix) as temp_file:
-                temp_file.write(user_code)
+                temp_file.write(user_code_with_input)
                 temp_file_name = temp_file.name
-                user_code=user_code.replace("\n"+input_data,"")
+            
             if language == "cpp":
                 result = subprocess.run(
                     [temp_file_name + ".out"],
@@ -256,21 +213,26 @@ def execute1():
                     text=True,
                     timeout=3
                 )
+            
             actual_output = result.stdout.strip()
             is_correct = actual_output == expected_output
-            correct+=1
+            correct += 1
+            
             results.append({
                 "test_case": i + 1,
                 "expected": expected_output,
                 "actual": actual_output,
                 "correct": is_correct
             })
+        
         execution_time = round(time.time() - start_time, 3)
         print(results)
         return jsonify(results)
+    
     except subprocess.TimeoutExpired:
         return jsonify({"incorrect": False, "message": "Code execution timed out!"})
     except Exception as e:
         return jsonify({"incorrect": False, "message": f"Error: {str(e)}"})
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=80, debug=True)
