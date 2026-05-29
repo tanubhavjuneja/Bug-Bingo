@@ -44,7 +44,7 @@ const Game = () => {
       });
       
     return () => { isMounted = false; };
-  }, []); // Empty dependency array - only run once
+  }, [navigate]);
 
   useEffect(() => {
     if (gameOver || questions.length === 0) return;
