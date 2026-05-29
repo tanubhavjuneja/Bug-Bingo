@@ -14,6 +14,9 @@
     width: 100%;
     max-width: 400px;
   }
+  .registration-card-wide {
+    max-width: 600px;
+  }
   .registration-title {
     font-size: 1.8rem;
     font-weight: bold;
@@ -331,5 +334,26 @@
     font-weight: bold;
     margin: 10px 0;
     color: #e74c3c;
+  }
+
+  .rules-section {
+    text-align: left;
+    margin-bottom: 20px;
+  }
+
+  .rules-section .bug-bingo-card {
+    box-shadow: none;
+    border: 1px solid #eee;
+  }
+
+  .language-selection {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #eee;
+  }
+
+  .language-selection h3 {
+    margin-bottom: 10px;
+    color: #333;
   }
   

@@ -19,7 +19,7 @@ const Game1 = () => {
     const userInfo = JSON.parse(localStorage.getItem("userInformation"));
     
     if (!userInfo) {
-      navigate("/registration");
+      navigate("/");
       return;
     }
     
@@ -119,7 +119,7 @@ const Game1 = () => {
   };
 
   const handleBackToRegistration = () => {
-    navigate("/registration");
+    navigate("/");
   };
 
   const openPopup = (index) => {
@@ -152,11 +152,9 @@ const Game1 = () => {
       <div className="game-over">
         <h2>Game Over</h2>
         <p>Your Score: {score}</p>
-        <p>Name: {userInfo?.name}</p>
-        <p>Roll No: {userInfo?.rollno}</p>
         <p>Language: {userInfo?.language}</p>
         <button className="back-to-registration" onClick={handleBackToRegistration}>
-          Back to Registration
+          Back to Home
         </button>
       </div>
     );
@@ -164,7 +162,7 @@ const Game1 = () => {
 
   return (
     <div className="game-container">
-      <h1 className="game-title">Bug Bingo - {JSON.parse(localStorage.getItem("userInformation"))?.language} Edition (Final Round)</h1>
+      <h1 className="game-title">Bug Bingo - {JSON.parse(localStorage.getItem("userInformation"))?.language} Edition (Round 2)</h1>
       <div className="timer">Time Left: {formatTime(timeLeft)}</div>
       <div className="game-grid">
         {questions.map((question, index) => (
@@ -195,7 +193,7 @@ const Game1 = () => {
         </div>
       )}
       <button className="back-to-registration" onClick={handleBackToRegistration}>
-        Back to Registration
+        Back to Home
       </button>
       <button 
         className="submit-score-btn" 
